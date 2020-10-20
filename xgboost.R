@@ -58,7 +58,7 @@ cvplot = function(model){ #visualizing function
     geom_point(alpha = 0.2)+
     geom_smooth(alpha = 0.4,se = F)+
     theme_bw()+
-    ggtitle("Apple's Rbox : XGBoost Cross-validation Visualization",
+    ggtitle("XGBoost Cross-validation Visualization",
             subtitle = paste0('fold : ',length(model$folds),
                               '  iteration : ',model$niter
             )
@@ -168,3 +168,14 @@ data.frame(variable = rep(imp$Feature,3),
 # Frequency: It just counts the number of times a feature is used in all generated trees.
 
 
+## Rank 예제 
+require(xgboost)
+data(agaricus.train, package='xgboost')
+train <- agaricus.train
+# (data has 6513 rows. 65 queries of length 100 and one with length 13)
+groups <- c(rep(100, 65), 13)
+dtrain <- xgb.DMatrix(data = train$data, label = train$label, group = groups)
+bst <- xgboost(dtrain, max.depth = 2, eta = .1, nround = 10, nthread = 2, objective = 'rank:pairwise')
+
+res_g <- predict(bst, train$data)
+res <- predict(bst, train$data)
