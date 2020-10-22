@@ -7,6 +7,7 @@ library(tm)
 library(foreach)
 library(ggplot2)
 library(ROSE)
+library(xgboost)
 
 library(doMC) # Only for Linux
 registerDoMC(cores=4)
@@ -64,6 +65,9 @@ levels(df_mfull[,"linear_type"])<-c("asymmetric","symmetric","symmetric_power","
 
 df_mfull[,"linear_type"] <- droplevels(df_mfull[,"linear_type"])
 
+save(df_mfull,file="./df_mfull.Rdata")
+
+
 a_num = df_mfull %>% model.matrix(~0+precision,.) %>% as.data.frame %>%  #one-hot encoding matrix
     bind_cols(df_mfull %>% select(-precision))
 a_num = a_num %>% model.matrix(~0+profile,.) %>% as.data.frame %>%  #one-hot encoding matrix
@@ -72,6 +76,9 @@ a_num = a_num %>% model.matrix(~0+granularity,.) %>% as.data.frame %>%  #one-hot
   bind_cols(a_num %>% select(-granularity)) 
 a_num = a_num %>% model.matrix(~0+clipping,.) %>% as.data.frame %>%  #one-hot encoding matrix
   bind_cols(a_num %>% select(-clipping)) 
+
+a_rank <- a_num %>% model.matrix(~0+linear_type,.) %>% as.data.frame %>%  #one-hot encoding matrix
+  bind_cols(a_num %>% select(-linear_type))
 a_num = a_num %>% model.matrix(~0+linear_type,.) %>% as.data.frame %>%  #one-hot encoding matrix
   bind_cols(a_num %>% select(-linear_type,-accuracy, -model)) 
 
@@ -174,8 +181,7 @@ xgb.plot.tree(model = model_best_hot, trees = 1, feature_names = colnames(a_num)
 
 xgb.plot.multi.trees(model = model_best_hot, trees = 1, feature_names = colnames(a_num))
 
-
-# 6번의 LOOSO Testing, metric은 RMSE
+# 6번의 leave one subject out cross validation LOSO, Testing, metric은 RMSE
 
 
 
@@ -190,16 +196,61 @@ model_best_hot_new = xgboost(data = a_hot, label = b_hot,
 
 
 # Rank model로 다시 수행
-df_rank <- cbind.data.frame(a_num,b)
-df_rank %>% arrange(desc(accuracy)) %>% mutate(rnk=row_number())
+# group =  model로 한다. 
+#col_name <- colnames(a_rank)
+#col_name[1] = "model"
+#col_name[17] = "linear_typeasymmetric"
+#a_rank <- a_rank[,col_name]
+
+# group based rank 
+rank_all_group <- a_rank %>% group_by(model) %>% 
+  arrange(desc(accuracy)) %>% mutate(rnk=row_number()) %>% data.frame
+rank_all_group <- arrange(rank_all_group, group_by = model)
+rank_train_group <- rank_all_group %>% select(-c("model","accuracy","rnk")) %>% data.matrix
+rank_label_group <- rank_all_group[,"rnk"]
+
+# single group based rnak
+rank_all <- a_rank %>% arrange(desc(accuracy)) %>% mutate(rnk=row_number())
+rank_all %>% print(width=Inf, n=30) # 확인
+rank_label <- rank_all[,"rnk"]
+rank_train <- rank_all %>% select(-c("model","accuracy","rnk")) %>% data.matrix
+
+# group: # of models
+groups <- rank_all_group %>% group_by(model) %>% dplyr::summarise(cnt = n()) %>% pull(cnt)
+# signle
+groups <- 194
+
+xgb_dm_rank_train <- xgb.DMatrix(data = rank_train_group, label = rank_label_group, group = groups)
+
+# "rank:pairwise", "rank:ndcg" rank:map
+xgb_predictor_ranking_model4 = xgboost(data = xgb_dm_rank_train,
+         nrounds = 200, early_stopping_rounds = 150,# about folds and rounds
+         objective = "rank:pairwise",verbose = F,
+         params = list("eta"=grid[which.min(grid_search_hot$test_rmse_last),1],
+                       "gamma"=grid[which.min(grid_search_hot$test_rmse_last),2]))
+
+predict(xgb_predictor_ranking_model, rank_train)
+predict(xgb_predictor_ranking_model, rank_train) > 0 
+
+predict(xgb_predictor_ranking_model2, rank_train)
+
+predict(xgb_predictor_ranking_model3, rank_train)
+
+predict(xgb_predictor_ranking_model4, rank_train_group)
+# 그룹이 1개면 뭔가 이상한듯?? -> 전부 상수 값으로 출력됨
+
+
+# 변형 
+importance_matrix <- xgb.importance(colnames(rank_train_group), model = xgb_predictor_ranking_model4)
+# Use `xgb.plot.importance`, which create a _barplot_ or use `xgb.ggplot.importance`
+library(Ckmeans.1d.dp) # for xgb.ggplot.importance
+xgb.ggplot.importance(importance_matrix, top_n = 15, measure = "Gain")
 
 
 ## backup-code
 dtrain <- xgb.DMatrix(data = a, label=b)
 bstDNatrux <- xgboost(data = dtrain, max.depth =2, eta= 1, nthread=2, nrounds=200, objective = 'reg:squarederror')
-
 predict(bstDNatrux, dtrain)
-
 abs((b[,1] - predict(bstDNatrux, dtrain)) / b[,1])  %>% mean 
 
 
