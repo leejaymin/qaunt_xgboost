@@ -112,6 +112,8 @@ rank_all_group <- a_rank %>% group_by(model) %>%
 rank_all_group <- arrange(rank_all_group, group_by = model) # 핵심: group으로 재정렬  
 rank_train_group <- rank_all_group %>% select(-c("model","accuracy","rnk")) %>% data.matrix
 rank_label_group <- rank_all_group[,"rnk"]
+save(rank_all_group, file="rank_all_group.Rdata")
+
 
 # single group based rnak
 rank_all <- a_rank %>% arrange(desc(accuracy)) %>% mutate(rnk=row_number())
@@ -119,14 +121,6 @@ rank_all %>% print(width=Inf, n=30) # 확인
 rank_label <- rank_all[,"rnk"]
 rank_train <- rank_all %>% select(-c("model","accuracy","rnk")) %>% data.matrix
 
-
-
-
-## backup-code
-dtrain <- xgb.DMatrix(data = a, label=b)
-bstDNatrux <- xgboost(data = dtrain, max.depth =2, eta= 1, nthread=2, nrounds=200, objective = 'reg:squarederror')
-predict(bstDNatrux, dtrain)
-abs((b[,1] - predict(bstDNatrux, dtrain)) / b[,1])  %>% mean 
 
 
 
