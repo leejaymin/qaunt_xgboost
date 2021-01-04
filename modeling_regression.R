@@ -128,14 +128,15 @@ for(item in model_names){
 # + check data to use unexplored them.
 final_exlored_sequence <- list()
 online_top1_seq <- list() 
+online_top1_accuracy <- list()
 
-for (sample in (10:10)){
-  print(sprintf("######### Smaple: %d ############",sample))
+for (sample in (1:1)){
+  #print(sprintf("######### Smaple: %d ############",sample))
   prev_pred_accuracy_sum <- -1
 
   for(item in model_names){
     print(item)
-    #browser()
+    
     # google lenet v4 implementation 
     reg_test_loso <- rank_all_group %>% filter(model==item) #%>%select(-c("accuracy","rnk","model")) %>% data.matrix
     #reg_te_label_loso <- rank_all_group %>% filter(model==item) %>% select("accuracy","rnk")
@@ -152,12 +153,25 @@ for (sample in (10:10)){
     
     df_res_pred <- df_res_pred %>% arrange(desc(pred)) # along with prediction, rearrange pred to make training data.
   
-    print(sprintf("Top1 pred: %d, Real: %d",top1_pred,top1_real))
-    print(df_res_pred[1:sample,c("rnk")])
-    print(df_res_pred[1:sample,c("accuracy")])
-    print(df_res_pred[1:sample,c("pred")])
-    pred_accuracy_sum <- sum(df_res_pred[1:sample,c("pred")])
-    print(sprintf("sum of accuracy: %f",pred_accuracy_sum))
+    #print(sprintf("Top1 pred: %d, Real: %d",top1_pred,top1_real))
+    #print(df_res_pred[1:sample,c("rnk")])
+    #print(df_res_pred[1:sample,c("accuracy")])
+    #print(df_res_pred[1:sample,c("pred")])
+    #pred_accuracy_sum <- sum(df_res_pred[1:sample,c("pred")])
+    #print(sprintf("sum of accuracy: %f",pred_accuracy_sum))
+    top1_seq <- c(top1_pred)
+    # redundant check (validation check for training)
+    #browser()
+    print(df_res_pred %>% filter(pred == max(pred)) %>% tally())
+    if(df_res_pred %>% filter(pred == max(pred)) %>% tally() %>% as.vector == 1){
+      top1_accuracy <- c(df_res_pred[which.max(df_res_pred[,"pred"]), "accuracy"])
+    }else{ #중복 있으면 추론 실패로 zero
+      top1_accuracy <- c(0)
+    }
+    #top1_accuracy <- c(0) # simple online learning
+    
+    print("top1_accuracy vector")
+    print(top1_accuracy)
     
     # prepare online learning dataset
     #online_tr_label <- online_tr[1:sample,"accuracy"] # 예측 값의 5개 (top5)의 real rank
@@ -170,10 +184,11 @@ for (sample in (10:10)){
                                 objective = 'reg:squarederror',verbose = F,
                                 params = list("eta"=grid[which.min(grid_search_hot$test_rmse_last),1],
                                               "gamma"=grid[which.min(grid_search_hot$test_rmse_last),2]))
+    
     explored_rnk <- df_res_pred[1:sample,"rnk"] # 학습에 쓴것들을 기록한다. 다시 재 탐색을 하지 않기 위해서 
-    top1_seq <- c(top1_pred)
     print("explored_rnk")
     print(explored_rnk)
+    
     for (i in seq(sample+1,length(df_res_pred[,"accuracy"]),1)){
       print(i)
       #browser()
@@ -189,7 +204,7 @@ for (sample in (10:10)){
       print(df_res_pred[1:sample,c("pred")])
       pred_accuracy_sum <- sum(df_res_pred[1:sample,c("pred")])
       print(sprintf("sum of accuracy: %f",pred_accuracy_sum))
-
+      print(df_res_pred %>% filter(pred == max(pred)) %>% tally())
       #if(pred_accuracy_sum == prev_pred_accuracy_sum){
       #  break
       #}
@@ -201,12 +216,28 @@ for (sample in (10:10)){
       unexplored_dfres <- unexplored_dfres %>% arrange(desc(pred)) # re-arrange
       explored_rnk <- c(explored_rnk, unexplored_dfres[1:1,"rnk"]) # accumulate explored_rnk (탐색할 것 만큼 누적)
       top1_seq <- c(top1_seq,top1_pred)
+      
+      # redundant check (validation check for training)
+      print(df_res_pred %>% filter(pred == max(pred)) %>% tally())
+      if(df_res_pred %>% filter(pred == max(pred)) %>% tally() %>% as.vector == 1){
+        top1_accuracy <- c(top1_accuracy,
+                           max(c(top1_accuracy, 
+                                 df_res_pred[which.max(df_res_pred[,"pred"]), "accuracy"]))
+                           )
+      }else if (max(top1_accuracy) != 0 ){ #중복 있으면 추론 실패로 zero
+        top1_accuracy <- c(top1_accuracy, max(top1_accuracy))
+      }else{
+        top1_accuracy <- c(top1_accuracy, 0)
+      }
+      print("top1_accuracy vector")
+      print(top1_accuracy)
+      
       unexplored_dfres <- unexplored_dfres[1:1,]
       
       # Create train data for online learning w/o pre-model.
       online_train_data <- rbind.data.frame(explored_dfres,unexplored_dfres)
-      print("online train data dim:")
-      dim(online_train_data)
+      #print("online train data dim:")
+      #print(dim(online_train_data))
       
       print("explored_rnk:")
       print(explored_rnk)
@@ -221,10 +252,14 @@ for (sample in (10:10)){
                                                 "gamma"=grid[which.min(grid_search_hot$test_rmse_last),2]))
                                   #xgb_model=online_xgb_models)
     }
+    #browser()
     final_exlored_sequence <- c(final_exlored_sequence,list(explored_rnk))
     online_top1_seq <- c(online_top1_seq,list(top1_seq))
+    online_top1_accuracy <- c(online_top1_accuracy,list(top1_accuracy))
   }
 }
+save(online_top1_accuracy,file="./online_top1_accuracy.Rdata")
+save(online_top1_accuracy_simple,file="./online_top1_accuracy_simple.Rdata")
 
 # Feasibility Test (upper-bound, if only the data from same model is used)
 for(item in model_names){
@@ -473,7 +508,7 @@ for(item in model_names){
   print(item)
   # not use one-hot encoding data frame.
   reg_test_loso <- df_mfull %>% filter(model==item) #%>%select(-c("accuracy","rnk","model")) %>% data.matrix
-  set.seed(1)
+  set.seed(1103)
   top1_accuracy <- sample(reg_test_loso[,"accuracy"])
   print("original accuracy sample")
   print(top1_accuracy)
