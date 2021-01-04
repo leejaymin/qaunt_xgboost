@@ -35,16 +35,17 @@ cvplot = function(model){ #visualizing function
 
 #df_full_1107 <- read.xlsx("quant_1107.xlsx",sheetName="full")
 #df_full_1201 <- read.xlsx("quant_1201.xlsx",sheetName="full")
-df_full_1216 <- read.xlsx("quant_1216.xlsx",sheetName="full")
+#df_full_1216 <- read.xlsx("quant_1216.xlsx",sheetName="full")
+df_full_0102 <- read.xlsx("quant_0102.xlsx",sheetName="full")
 
 
 #res_vta <- df_full_1107 %>% filter(model=="resnet18")
-res_vta <- df_full_1216 %>% filter(model=="resnet18" & backend=="VTAInterpreter")
+res_vta <- df_full_0102 %>% filter(model=="resnet18" & backend=="VTAInterpreter")
 save(res_vta,file="./res_vta.Rdata")
 
 
-df_mf <- read.xlsx("quant_1216.xlsx",sheetName="m_f")
-df_mfull <- merge(df_full_1216, df_mf, by="model")
+df_mf <- read.xlsx("quant_0102.xlsx",sheetName="m_f")
+df_mfull <- merge(df_full_0102, df_mf, by="model")
 #df_mfull <- df_mfull[]
 
 # unrelated index
@@ -117,7 +118,7 @@ save(rank_all_group, file="rank_all_group.Rdata")
 
 # single group based rnak
 rank_all <- a_rank %>% arrange(desc(accuracy)) %>% mutate(rnk=row_number())
-rank_all %>% print(width=Inf, n=30) # 확인
+#rank_all %>% print(width=Inf, n=30) # 확인
 rank_label <- rank_all[,"rnk"]
 rank_train <- rank_all %>% select(-c("model","accuracy","rnk")) %>% data.matrix
 
