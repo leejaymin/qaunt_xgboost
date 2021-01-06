@@ -12,7 +12,7 @@ load("./rank_all.Rdata")
 
 
 # Resnet18 (70.67%)
-df_full_1216 %>% filter(model=="resnet18") %>% filter(precision!="FP32" & backend!="VTAInterpreter") %>% 
+df_full_0102 %>% filter(model=="resnet18") %>% filter(precision!="FP32" & backend!="VTAInterpreter") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
   facet_grid(granularity~profile) +
@@ -22,26 +22,36 @@ df_full_1216 %>% filter(model=="resnet18") %>% filter(precision!="FP32" & backen
   geom_text(x=1, y=73, aes(label="70.67%")) +
   geom_hline(aes(yintercept=70.67), colour="#BB0000", linetype="dashed") +
   mytheme + 
-  theme(legend.position="top") +
-  ylab("Top1 Accuracy(%)") + xlab("Clipping")
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid"),
+        axis.title.x=element_blank()) +  
+  ylab("Top1 Accuracy(%)") 
 
 # MobileNet (71.81 %)
-df_full_1216 %>% filter(model=="MobileNet") %>% filter(precision!="FP32") %>% 
+df_full_0102 %>% filter(model=="MobileNet") %>% filter(precision!="FP32") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
   facet_grid(granularity~profile) +
   coord_cartesian(ylim=c(0,75)) + # real adjust
   scale_y_continuous(breaks= seq(0,75, by=10)) +
-  geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
+  geom_text(size=3,aes(label=accuracy,  y = accuracy-0.5),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
   geom_text(x=1, y=73, aes(label="71.81%")) +
   geom_hline(aes(yintercept=71.81), colour="#BB0000", linetype="dashed") +
   mytheme + 
-  theme(legend.position="top") +
-  ylab("Top1 Accuracy(%)") + xlab("Clipping")
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid"),
+        axis.title.x=element_blank()) +  
+  ylab("Top1 Accuracy(%)")
   
 
 # ResNet50 (76.08 %)
-df_full_1216 %>% filter(model=="resnet50") %>% filter(precision!="FP32") %>% 
+df_full_0102 %>% filter(model=="resnet50") %>% filter(precision!="FP32") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
   facet_grid(granularity~profile) +
@@ -51,8 +61,13 @@ df_full_1216 %>% filter(model=="resnet50") %>% filter(precision!="FP32") %>%
   geom_text(x=1, y=78, aes(label="76.08%")) +
   geom_hline(aes(yintercept=76.08), colour="#BB0000", linetype="dashed") +
   mytheme + 
-  theme(legend.position="top") +
-  ylab("Top1 Accuracy(%)") + xlab("Clipping")
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid"),
+        axis.title.x=element_blank()) +  
+  ylab("Top1 Accuracy(%)")
 
 
 # SqueezeNet (53.8 %)
@@ -66,8 +81,13 @@ df_full_1216 %>% filter(model=="SqueezeNet") %>% filter(precision!="FP32") %>%
   geom_text(x=1, y=56, aes(label="53.8%")) +
   geom_hline(aes(yintercept=53.8), colour="#BB0000", linetype="dashed") +
   mytheme + 
-  theme(legend.position="top") +
-  ylab("Top1 Accuracy(%)") + xlab("Clipping")
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid"),
+        axis.title.x=element_blank()) +  
+  ylab("Top1 Accuracy(%)")
 
 
 # ShuffleNet (63.96)
@@ -81,8 +101,13 @@ df_full_1216 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & prec
   geom_text(x=1, y=66, aes(label="63.96%")) +
   geom_hline(aes(yintercept=63.96), colour="#BB0000", linetype="dashed") +
   mytheme + 
-  theme(legend.position="top") +
-  ylab("Top1 Accuracy(%)") + xlab("Clipping")
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid"),
+        axis.title.x=element_blank()) +  
+  ylab("Top1 Accuracy(%)")
 
 df_full_1216 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & precision=="mixed") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
@@ -94,12 +119,17 @@ df_full_1216 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & prec
   geom_text(x=1, y=66, aes(label="63.96%")) +
   geom_hline(aes(yintercept=63.96), colour="#BB0000", linetype="dashed") +
   mytheme + 
-  theme(legend.position="top") +
-  ylab("Top1 Accuracy(%)") + xlab("Clipping")
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid"),
+        axis.title.x=element_blank()) +  
+  ylab("Top1 Accuracy(%)")
 
 
 # googlenet_slim_v4 (70.39)
-df_full_1216 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32" & precision!="mixed") %>% 
+df_full_0102 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32" & precision!="mixed") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
   facet_grid(granularity~profile) +
@@ -109,8 +139,13 @@ df_full_1216 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32"
   geom_text(x=1, y=75, aes(label="70.39%")) +
   geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
   mytheme + 
-  theme(legend.position="top") +
-  ylab("Top1 Accuracy(%)") + xlab("Clipping")
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid"),
+        axis.title.x=element_blank()) +  
+  ylab("Top1 Accuracy(%)")
 
 df_full_1216 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32" & precision=="mixed") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
@@ -122,8 +157,14 @@ df_full_1216 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32"
   geom_text(x=1, y=75, aes(label="70.39%")) +
   geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
   mytheme + 
-  theme(legend.position="top") +
-  ylab("Top1 Accuracy(%)") + xlab("Clipping")
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid"),
+        axis.title.x=element_blank()) +  
+  ylab("Top1 Accuracy(%)")
+
 
 
 # The plot for all models. The plot is for the project slides.

@@ -44,7 +44,7 @@ grid_search_hot = foreach(i = 1:nrow(grid),.combine = rbind,.packages = c('dplyr
              test_rmse_last = unlist(model$evaluation_log[,4]) %>% last)
   
 }
-
+save(grid_search_hot,file="./grid_search_hot.Rdata")
 grid_search_hot[which.min(grid_search_hot$test_rmse_last),]
 grid[which.min(grid_search_hot$test_rmse_last),]
 
@@ -54,8 +54,13 @@ grid[which.min(grid_search_hot$test_rmse_last),]
 model_best_hot = xgboost(data = a_hot, label = b_hot,
                          nrounds = 200, early_stopping_rounds = 150,# about folds and rounds
                          objective = 'reg:squarederror',verbose = F,
-                         params = list("eta"=grid[which.min(grid_search_hot$test_rmse_last),1],
-                                       "gamma"=grid[which.min(grid_search_hot$test_rmse_last),2]))
+                         params = list("eta"=0.15 ,"gamma"=3))
+                         #params = list("eta"=grid[which.min(grid_search_hot$test_rmse_last),1],
+                        #               "gamma"=grid[which.min(grid_search_hot$test_rmse_last),2]))
+# new, eta 0.3, gamma = 1
+# eta 0.15, gamma = 2 
+# for paper, eta 0.15, gamma =3 
+save(model_best_hot,file="./model_best_hot.Rdata")
 
 abs((b_hot[,1] - predict(model_best_hot,a_hot)) / b_hot[,1])  %>% mean 
 
@@ -70,20 +75,24 @@ xgb.plot.importance(imp)
 importance_matrix <- xgb.importance(colnames(a_num), model = model_best_hot)
 # Use `xgb.plot.importance`, which create a _barplot_ or use `xgb.ggplot.importance`
 library(Ckmeans.1d.dp) # for xgb.ggplot.importance
-xgb.ggplot.importance(importance_matrix, top_n = 15, measure = "Gain")
+xgb.ggplot.importance(importance_matrix, top_n = 30, measure = "Gain") + mytheme +
+  theme(legend.title = element_blank(), 
+        legend.position="none",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid")) +
+  ggtitle("")
+
 
 
 #customized visualization
 data.frame(variable = rep(imp$Feature,3),
            value = c(imp$Gain,imp$Cover,imp$Frequency),
            Type = c(rep('Gain',nrow(imp)),rep('Cover',nrow(imp)),rep('Frequency',nrow(imp)))
-) %>% ggplot(aes(variable,value,fill = variable))+
+) %>% filter(Type=="Gain") %>% ggplot(aes(variable,value,fill = variable))+
   geom_bar(stat = 'identity')+
-  facet_grid(~Type)+
-  theme_bw()+
-  ggtitle('XGBoost : Customized Importance Plot',
-          subtitle = "Author : Jemin")
-
+  #facet_grid(~Type)+
+  mytheme 
 
 # Print XGBoost Tree ------------------------------------------------------
 xgb.plot.tree(model = model_best_hot, trees = 1, feature_names = colnames(a_num))
@@ -528,16 +537,24 @@ graph_xgb_trials <- data.frame()
 for(index in seq(1,6,1)){
   item <- model_names[index]
   graph_xgb_trials <- rbind.data.frame(graph_xgb_trials,
-                                       cbind.data.frame("model"=item,"tuner"="xgboost",
+                                       cbind.data.frame("model"=item,"tuner"="XGBoost: transfer & online",
                                        "accuracy"=transfer_online_top1_accuracy[[index]]))
-  
   graph_xgb_trials <- rbind.data.frame(graph_xgb_trials,
-                                      cbind.data.frame("model"=item,"tuner"="random",
+                                       cbind.data.frame("model"=item,"tuner"="XGBoost: online",
+                                                        "accuracy"=online_top1_accuracy[[index]]))
+  graph_xgb_trials <- rbind.data.frame(graph_xgb_trials,
+                                       cbind.data.frame("model"=item,"tuner"="XGBoost: individual model",
+                                                        "accuracy"=online_top1_accuracy_simple[[index]]))
+  graph_xgb_trials <- rbind.data.frame(graph_xgb_trials,
+                                      cbind.data.frame("model"=item,"tuner"="Random Search",
                                                        "accuracy"=random_top1_accuracy[[index]]))
   graph_xgb_trials <- rbind.data.frame(graph_xgb_trials,
-                                       cbind.data.frame("model"=item,"tuner"="grid",
+                                       cbind.data.frame("model"=item,"tuner"="Grid Search",
                                                         "accuracy"=grid_top1_accuracy[[index]]))
-  
+  graph_xgb_trials <- rbind.data.frame(graph_xgb_trials,
+                                       cbind.data.frame("model"=item,"tuner"="FP32",
+                                                        "accuracy"=rep(FP32[index,"accuracy"],
+                                                                       length(transfer_online_top1_accuracy[[index]]))))
 }
 graph_xgb_trials <- graph_xgb_trials %>% group_by(model,tuner) %>% mutate(trials=row_number()) %>% data.frame()
 
@@ -556,24 +573,74 @@ mydf_m = mydf %>% gather(model,accuracy,-trial)
 
 
 # 통합 그림 
-graph_xgb_trials %>%  
+graph_xgb_trials %>% filter(tuner != "XGBoost: individual model") %>%
 ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
-geom_line() + mytheme +
-theme(legend.position="top") +
-ylab("Top1 Accuracy(%)") + xlab("Trials") +
-  facet_wrap(.~model)
-  
-  #geom_point() +
-  #geom_hline(aes(yintercept=80), colour="#BB0000", linetype="dashed")
+geom_step(size=1) + mytheme +
+theme(legend.title = element_blank(), 
+      legend.position="top",
+      legend.background = element_rect(colour = "black", 
+                                       size=0.2, 
+                                       linetype="solid")) + 
+ylab("Top1 Accuracy(%)") + xlab("# of Trials") +
+facet_wrap(.~model, scales = "free") 
+
+graph_xgb_trials %>%
+  ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
+  geom_step(size=1) + mytheme +
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid")) + 
+  ylab("Top1 Accuracy(%)") + xlab("# of Trials") +
+  facet_wrap(.~model, scales = "free") 
+
+# define function 
+trial_plot_func <- function(model_name, zoom_begin, zoom_finish){
+  p <- graph_xgb_trials %>% filter(model==model_name) %>%  
+    ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
+    geom_step(size=1) +
+    #geom_hline(aes(yintercept=FP32), colour="#BB0000", linetype="dashed") +
+    mytheme +
+    theme(legend.title = element_blank(), 
+          legend.position="top",
+          legend.background = element_rect(colour = "black", 
+                                           size=0.2, 
+                                           linetype="solid")) +
+    ylab("Top1 Accuracy(%)") + xlab("# of Trials") +
+    facet_zoom(ylim = c(zoom_begin, zoom_finish), zoom.size = 1, show.area = FALSE )  
+  p
+}
+
+# idea, debugging 요소 49것 해결 
+# 절대적으론 너무 값이 뭐가 잘 안보인다.
+# relative spped up처럼, 
+# 상대적인 error를 보이는게 어떠한가?
+# 그래야 깔끔하게 보일듯 
+
+trial_plot_func("MobileNet", 69, 72)
+trial_plot_func("ShuffleNet",59.9, 64)
+trial_plot_func("SqueezeNet",52,53.9)
+trial_plot_func("googlenet_slim_v4",69.5, 70.6)
+trial_plot_func("resnet18",65,71)
+trial_plot_func("resnet50",75, 76.1)
 
 graph_xgb_trials %>% filter(model=="MobileNet") %>%  
   ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
-  geom_line() + mytheme +
-  theme(legend.position="top") +
-#  coord_cartesian(ylim=c(65,73)) + # real adjust
-#  scale_y_continuous(breaks= seq(65,73, by=4)) +
+  geom_step(size=1) +
   geom_hline(aes(yintercept=71.81), colour="#BB0000", linetype="dashed") +
-  ylab("Top1 Accuracy(%)") + xlab("Trials")
+  mytheme +
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid")) +
+  #  coord_cartesian(ylim=c(65,73)) + # real adjust
+  #  scale_y_continuous(breaks= seq(65,73, by=4)) +
+  ylab("Top1 Accuracy(%)") + xlab("# of Trials") +
+  facet_zoom(ylim = c(65, 72), zoom.size = 0.5, show.area = FALSE )
+  
+
 
 graph_xgb_trials %>% filter(model=="ShuffleNet") %>%  
   ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
@@ -582,7 +649,7 @@ graph_xgb_trials %>% filter(model=="ShuffleNet") %>%
   coord_cartesian(ylim=c(50,65)) + # real adjust
   scale_y_continuous(breaks= seq(50,65, by=3)) +
   geom_hline(aes(yintercept=63.96), colour="#BB0000", linetype="dashed") +
-  ylab("Top1 Accuracy(%)") + xlab("Trials")
+  ylab("Top1 Accuracy(%)") + xlab("# of Trials") 
 
 
 graph_xgb_trials %>% filter(model=="SqueezeNet") %>%  
@@ -590,7 +657,7 @@ graph_xgb_trials %>% filter(model=="SqueezeNet") %>%
   geom_line() + mytheme +
   theme(legend.position="top") +
   geom_hline(aes(yintercept=53.8), colour="#BB0000", linetype="dashed") +
-  ylab("Top1 Accuracy(%)") + xlab("Trials")
+  ylab("Top1 Accuracy(%)") + xlab("# of Trials")
 
 
 graph_xgb_trials %>% filter(model=="googlenet_slim_v4") %>%  
@@ -598,7 +665,7 @@ graph_xgb_trials %>% filter(model=="googlenet_slim_v4") %>%
   geom_line() + mytheme +
   theme(legend.position="top") +
   geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
-  ylab("Top1 Accuracy(%)") + xlab("Trials")
+  ylab("Top1 Accuracy(%)") + xlab("# of Trials")
 
 graph_xgb_trials %>% filter(model=="resnet18") %>%  
   ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
