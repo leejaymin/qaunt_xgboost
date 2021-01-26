@@ -211,4 +211,41 @@ res_vta %>% filter(precision!="FP32") %>% ggplot(aes(x=clipping, y=accuracy, fil
   mytheme
  
 
+# latency -----------------------------------------------------------------
+df_latency <- df_latency %>% filter(model!="MobileNetv2_onnx" & 
+                                      target != "x86 ") %>% data.frame
+df_latency <- droplevels(df_latency)
+levels(df_latency[,"model"]) <-c ("googlenet_slim_v4","mobilenet","shufflenet","squeezenet","resnet18","resnet50")
 
+df_latency %>%
+  #ggplot(aes(x=schema, y=speedup, fill = schema))+
+  #geom_bar(stat="identity", colour="black") +
+  ggplot(aes(x=model, y=speedup, fill = schema))+
+  geom_bar(stat="identity",position="dodge", colour="black") +
+#facet_wrap(.~model, scales = "free") +
+  mytheme +
+  theme(axis.title.x=element_blank(),
+        legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid")) + 
+  ylab("Normalized Performance")  
+  
+  
+  
+  facet_grid(granularity~profile) +
+  coord_cartesian(ylim=c(0,80)) + # real adjust
+  scale_y_continuous(breaks= seq(0,80, by=10)) +
+  geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
+  geom_text(x=1, y=75, aes(label="70.39%")) +
+  geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
+  mytheme + 
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid"),
+        axis.title.x=element_blank()) +  
+    
+  ylab("Top1 Accuracy(%)")

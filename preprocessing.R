@@ -46,6 +46,14 @@ save(res_vta,file="./res_vta.Rdata")
 
 df_mf <- read.xlsx("quant_0102.xlsx",sheetName="m_f")
 df_mfull <- merge(df_full_0102, df_mf, by="model")
+
+
+# latency
+df_latency <- read.xlsx("quant_0102.xlsx",sheetName="Inference")
+#df_latency <- na.omit(df_latency) # remove missing data on mixed googlev4
+
+
+
 #df_mfull <- df_mfull[]
 
 # unrelated index

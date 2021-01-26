@@ -572,7 +572,7 @@ library(tidyr)
 mydf_m = mydf %>% gather(model,accuracy,-trial)
 
 
-# 통합 그림 
+# 통합 그림 - 5개의 조건
 graph_xgb_trials %>% filter(tuner != "XGBoost: individual model") %>%
 ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
 geom_step(size=1) + mytheme +
@@ -584,6 +584,7 @@ theme(legend.title = element_blank(),
 ylab("Top1 Accuracy(%)") + xlab("# of Trials") +
 facet_wrap(.~model, scales = "free") 
 
+# 통합 그림 - 6개의 조건
 graph_xgb_trials %>%
   ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
   geom_step(size=1) + mytheme +
@@ -595,7 +596,8 @@ graph_xgb_trials %>%
   ylab("Top1 Accuracy(%)") + xlab("# of Trials") +
   facet_wrap(.~model, scales = "free") 
 
-# define function 
+
+# Define a Function (각각의 모델 생성을 위한)
 trial_plot_func <- function(model_name, zoom_begin, zoom_finish){
   p <- graph_xgb_trials %>% filter(model==model_name) %>%  
     ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
@@ -625,6 +627,9 @@ trial_plot_func("googlenet_slim_v4",69.5, 70.6)
 trial_plot_func("resnet18",65,71)
 trial_plot_func("resnet50",75, 76.1)
 
+
+
+# backup ------------------------------------------------------------------
 graph_xgb_trials %>% filter(model=="MobileNet") %>%  
   ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
   geom_step(size=1) +
