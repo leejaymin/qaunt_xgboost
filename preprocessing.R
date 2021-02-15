@@ -130,6 +130,6 @@ rank_all <- a_rank %>% arrange(desc(accuracy)) %>% mutate(rnk=row_number())
 rank_label <- rank_all[,"rnk"]
 rank_train <- rank_all %>% select(-c("model","accuracy","rnk")) %>% data.matrix
 
-
-
+# print top 1 rank combinations
+df_mfull %>% group_by(model) %>% arrange(desc(accuracy)) %>% mutate(rnk=row_number()) %>% filter(rnk == 1) %>% data.frame
 

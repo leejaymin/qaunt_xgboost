@@ -168,28 +168,44 @@ df_full_1216 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32"
 
 
 # The plot for all models. The plot is for the project slides.
-rank_graph <- df_full_1201 %>% group_by(model) %>% 
-  arrange(desc(accuracy)) %>% mutate(rnk=row_number()) %>% data.frame
-
-rank_graph <- arrange(rank_graph, group_by = model) # 핵심: group으로 재정렬  
-
-rank_graph_best <- rank_graph %>% filter(rnk==1 | rnk ==2)
-rank_graph_best[,"rnk"] <- as.factor(rank_graph_best[,"rnk"])
-levels(rank_graph_best[,"rnk"]) <- c("FP32","INT8")
-
-rank_graph_best %>%  ggplot(aes(x=model, y=accuracy, fill = rnk)) +
+# Combine best models and TensorRT results 
+# filter를 이용하면 rnk1이 항상 FP32가 아닌 문제 발생. 따라서 직접 입력 
+g_best_trt <- data.frame(model=c("MobileNet","MobileNet","MobileNet",
+                                 "ShuffleNet","ShuffleNet","ShuffleNet",
+                                 "SqueezeNet","SqueezeNet","SqueezeNet",
+                                 "GoogleNet-slim-v4","GoogleNet-slim-v4","GoogleNet-slim-v4",
+                                 "ResNet18","ResNet18","ResNet18",
+                                 "ResNet50","ResNet50","ResNet50"),
+                         type=c("FP32","NEST-C(i8)","TensorRT-7.2.2(i8)",
+                                "FP32","NEST-C(i8)","TensorRT-7.2.2(i8)",
+                                "FP32","NEST-C(i8)","TensorRT-7.2.2(i8)",
+                                "FP32","NEST-C(i8)","TensorRT-7.2.2(i8)",
+                                "FP32","NEST-C(i8)","TensorRT-7.2.2(i8)",
+                                "FP32","NEST-C(i8)","TensorRT-7.2.2(i8)"),
+                         accuracy=c(71.81,71.23,NaN,
+                                    63.96,63.41,NaN,
+                                    53.80,53.15,53.65,
+                                    70.39,70.58,69.99,
+                                    70.67,70.25,70.44,
+                                    76.08,76.01,76.03))
+g_best_trt %>%  ggplot(aes(x=model, y=accuracy, fill = type)) +
   geom_bar(stat="identity",position="dodge", colour="black") +
   #facet_grid(granularity~profile) +d
-  #coord_cartesian(ylim=c(0,80)) + # real adjust
-  #scale_y_continuous(breaks= seq(0,80, by=10)) +
-  geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
+  coord_cartesian(ylim=c(52,77)) + # real adjust
+  scale_y_continuous(breaks= seq(52,77, by=3)) +
+  geom_text(size=3,aes(label=accuracy,  y = accuracy-0.5),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
   #geom_text(x=1, y=75, aes(label="70.39%")) +
   #geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
   #ggtitle('Googlenet-v4-slim: FP32 Top1 accuracy: 70.39',
   #        subtitle = "Author : Jemin") +
-  mytheme
-
-
+  ylab("Top1 Accuracy(%)") +
+  mytheme + 
+  theme(legend.title = element_blank(), 
+        legend.position="top",
+        axis.title.x=element_blank(),
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid")) 
 
 
 # vta result --------------------------------------------------------------
@@ -231,7 +247,13 @@ df_latency %>%
                                          size=0.2, 
                                          linetype="solid")) + 
   ylab("Normalized Performance")  
-  
+ 
+# 2080ti GPU
+latency_gpu <- data.frame(model=c("resnet18","b"),
+                          target=c("2080ti","2080ti"),
+                          tool=c("nestc","nestc"),
+                          precision=c("FP32","FP32"),
+                          latency=c(100,200))
   
   
   facet_grid(granularity~profile) +
