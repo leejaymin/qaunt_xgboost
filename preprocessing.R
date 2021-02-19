@@ -49,7 +49,9 @@ df_mfull <- merge(df_full_0102, df_mf, by="model")
 
 
 # latency
-df_latency <- read.xlsx("quant_0102.xlsx",sheetName="Inference")
+#df_latency <- read.xlsx("quant_0102.xlsx",sheetName="Inference")
+df_latency <- read.xlsx("quant_0217.xlsx",sheetName="Inference")
+save(df_latency,file="./df_latency.Rdata")
 #df_latency <- na.omit(df_latency) # remove missing data on mixed googlev4
 
 

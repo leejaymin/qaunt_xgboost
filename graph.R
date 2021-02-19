@@ -183,7 +183,7 @@ g_best_trt <- data.frame(model=c("MobileNet","MobileNet","MobileNet",
                                 "FP32","NEST-C(i8)","TensorRT-7.2.2(i8)",
                                 "FP32","NEST-C(i8)","TensorRT-7.2.2(i8)"),
                          accuracy=c(71.81,71.23,NaN,
-                                    63.96,63.41,NaN,
+                                    63.96,63.41,64.77,
                                     53.80,53.15,53.65,
                                     70.39,70.58,69.99,
                                     70.67,70.25,70.44,
@@ -228,18 +228,23 @@ res_vta %>% filter(precision!="FP32") %>% ggplot(aes(x=clipping, y=accuracy, fil
  
 
 # latency -----------------------------------------------------------------
-df_latency <- df_latency %>% filter(model!="MobileNetv2_onnx" & 
-                                      target != "x86 ") %>% data.frame
-df_latency <- droplevels(df_latency)
-levels(df_latency[,"model"]) <-c ("googlenet_slim_v4","mobilenet","shufflenet","squeezenet","resnet18","resnet50")
+load("./df_latency.Rdata")
+# ARM-a53
+df_latency_a53 <- df_latency %>% filter(model!="MobileNetv2_onnx" & 
+                                      target == "a53") %>% data.frame
+df_latency_a53 <- droplevels(df_latency_a53)
+levels(df_latency_a53[,"model"]) <-c ("googlenet_slim_v4","mobilenet","shufflenet","squeezenet","resnet18","resnet50")
+vec_level <- levels(df_latency_a53y$schema)
+df_latency_a53$schema <- factor(df_latency_a53$schema, levels=c(vec_level[2],vec_level[1],vec_level[3],vec_level[5],vec_level[4]))
 
-df_latency %>%
+df_latency_a53 %>%
   #ggplot(aes(x=schema, y=speedup, fill = schema))+
   #geom_bar(stat="identity", colour="black") +
   ggplot(aes(x=model, y=speedup, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black") +
 #facet_wrap(.~model, scales = "free") +
   mytheme +
+  geom_text(aes(label=round(speedup,2),  y = speedup-.01), size =3 ,color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
   theme(axis.title.x=element_blank(),
         legend.title = element_blank(), 
         legend.position="top",
@@ -247,27 +252,77 @@ df_latency %>%
                                          size=0.2, 
                                          linetype="solid")) + 
   ylab("Normalized Performance")  
- 
-# 2080ti GPU
-latency_gpu <- data.frame(model=c("resnet18","b"),
-                          target=c("2080ti","2080ti"),
-                          tool=c("nestc","nestc"),
-                          precision=c("FP32","FP32"),
-                          latency=c(100,200))
-  
-  
-  facet_grid(granularity~profile) +
-  coord_cartesian(ylim=c(0,80)) + # real adjust
-  scale_y_continuous(breaks= seq(0,80, by=10)) +
-  geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
-  geom_text(x=1, y=75, aes(label="70.39%")) +
-  geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
-  mytheme + 
-  theme(legend.title = element_blank(), 
+
+# x86 i7-8700
+df_latency_i78700 <- df_latency %>% filter(model!="MobileNetv2_onnx" & 
+                                             target == "i7-8700") %>% data.frame
+df_latency_i78700 <- df_latency_i78700 %>% group_by(model) %>% mutate(up = latency.ms.[1]/latency.ms.) %>% 
+  select(model,tool,target,precision,schema,latency.ms.,up) %>% data.frame()
+levels(df_latency_i78700[,"model"]) <-c ("googlenet_slim_v4","mobilenet","shufflenet","squeezenet","resnet18","resnet50")
+df_latency_i78700 <- droplevels(df_latency_i78700)
+vec_level <- levels(df_latency_i78700$schema)
+df_latency_i78700$schema <- factor(df_latency_i78700$schema, levels=c(vec_level[2],vec_level[1],vec_level[3],vec_level[5],vec_level[4]))
+
+df_latency_i78700 %>%
+  #ggplot(aes(x=schema, y=speedup, fill = schema))+
+  #geom_bar(stat="identity", colour="black") +
+  ggplot(aes(x=model, y=up, fill = schema))+
+  geom_bar(stat="identity",position="dodge", colour="black") +
+  #facet_wrap(.~model, scales = "free") +
+  mytheme +
+  geom_text(aes(label=round(up,2),  y = up-.01),size=3, color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
+  theme(axis.title.x=element_blank(),
+        legend.title = element_blank(), 
         legend.position="top",
         legend.background = element_rect(colour = "black", 
                                          size=0.2, 
-                                         linetype="solid"),
-        axis.title.x=element_blank()) +  
-    
-  ylab("Top1 Accuracy(%)")
+                                         linetype="solid")) + 
+  ylab("Normalized Performance")
+
+
+# 2080ti GPU
+df_latency_2080ti <- df_latency %>% filter(model!="MobileNetv2_onnx" & 
+                                          target == "2080ti") %>% data.frame
+
+df_latency_2080ti <- df_latency_2080ti %>% group_by(model) %>% mutate(up = latency.ms.[1]/latency.ms.) %>% 
+  select(model,tool,target,precision,schema,latency.ms.,up) %>% data.frame()
+
+df_latency_2080ti <- droplevels(df_latency_2080ti)
+levels(df_latency_2080ti[,"model"]) <-c ("googlenet_slim_v4","mobilenet","shufflenet","squeezenet","resnet18","resnet50")
+vec_level <- levels(df_latency_2080ti$schema)
+df_latency_2080ti$schema <- factor(df_latency_2080ti$schema, levels=c(vec_level[2],vec_level[1],vec_level[3],vec_level[5],vec_level[4],vec_level[6]))
+df_latency_2080ti <- df_latency_2080ti %>%  mutate(type = paste(tool,precision,schema))  # for all tools, nees to generate unique labels
+  
+# nestc 
+df_latency_2080ti %>% filter(schema != "unknown") %>%
+  #ggplot(aes(x=schema, y=speedup, fill = schema))+
+  #geom_bar(stat="identity", colour="black") +
+  ggplot(aes(x=model, y=up, fill = schema))+
+  geom_bar(stat="identity",position="dodge", colour="black") +
+  #facet_wrap(.~model, scales = "free") +
+  mytheme +
+  geom_text(aes(label=round(up,2),  y = up-.01),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
+  theme(axis.title.x=element_blank(),
+        legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid")) + 
+  ylab("Normalized Performance")  
+  
+## ALL, trt, onnxruntime, nestc
+df_latency_2080ti %>% 
+  #ggplot(aes(x=schema, y=speedup, fill = schema))+
+  #geom_bar(stat="identity", colour="black") +
+  ggplot(aes(x=model, y=up, fill = type))+
+  geom_bar(stat="identity",position="dodge", colour="black") +
+  #facet_wrap(precision~tool, scales = "free") +
+  mytheme +
+  geom_text(aes(label=round(up,1),  y = up-.01),size=3, color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
+  theme(axis.title.x=element_blank(),
+        legend.title = element_blank(), 
+        legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid")) + 
+  ylab("Normalized Performance")
