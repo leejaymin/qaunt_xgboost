@@ -215,16 +215,23 @@ load("./res_vta.Rdata")
 res_vta %>% filter(precision!="FP32") %>% ggplot(aes(x=clipping, y=accuracy, fill = Fusion))+
   geom_bar(stat="identity",position="dodge", colour="black")+
   facet_wrap(.~profile) +
-  coord_cartesian(ylim=c(20,75)) + # real adjust
-  scale_y_continuous(breaks= seq(20,75, by=5)) +
+  coord_cartesian(ylim=c(20,80)) + # real adjust
+  scale_y_continuous(breaks= seq(20,80, by=20)) +
   geom_text(aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
-  geom_text(x=1, y=72, aes(label="70.67%")) +
-  geom_text(x=1, y=39, aes(label="TVM 37%")) +
+  geom_text(x=1.3, y=72, aes(label="FP32 Acc: 70.67%")) +
+  geom_text(x=1, y=39, aes(label="VTA Acc: 37%")) +
   geom_hline(aes(yintercept=70.67), colour="#BB0000", linetype="dashed") +
   geom_hline(aes(yintercept=37), colour="Blue", linetype="dashed") +
-  ggtitle('ResNet18: FP32 Top1 accuracy 70.67%',
-          subtitle = "Author : Jemin") +
-  mytheme
+  #ggtitle('ResNet18: FP32 Top1 accuracy 70.67%',
+  #        subtitle = "Author : Jemin") +
+  ylab("Top1 Accuracy(%)") +
+  mytheme + 
+  theme(#legend.title = element_blank(), 
+        legend.position="top",
+        #axis.title.x=element_blank(),
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid")) 
  
 
 # latency -----------------------------------------------------------------
