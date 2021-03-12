@@ -37,6 +37,8 @@ cvplot = function(model){ #visualizing function
 #df_full_1201 <- read.xlsx("quant_1201.xlsx",sheetName="full")
 #df_full_1216 <- read.xlsx("quant_1216.xlsx",sheetName="full")
 df_full_0102 <- read.xlsx("quant_0102.xlsx",sheetName="full")
+df_full_0302 <- read.xlsx("./inputs/quant_0302.xlsx",sheetName="full") # mixed precision results
+
 
 
 #res_vta <- df_full_1107 %>% filter(model=="resnet18")
@@ -134,4 +136,9 @@ rank_train <- rank_all %>% select(-c("model","accuracy","rnk")) %>% data.matrix
 
 # print top 1 rank combinations
 df_mfull %>% group_by(model) %>% arrange(desc(accuracy)) %>% mutate(rnk=row_number()) %>% filter(rnk == 1) %>% data.frame
+
+df_full_0302 %>% filter(precision != "FP32") %>% group_by(model) %>% 
+  arrange(desc(accuracy)) %>% mutate(rnk=row_number()) %>% filter(rnk == 1) %>% data.frame
+
+
 

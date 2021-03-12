@@ -108,8 +108,8 @@ df_full_1216 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & prec
                                          linetype="solid"),
         axis.title.x=element_blank()) +  
   ylab("Top1 Accuracy(%)")
-
-df_full_1216 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & precision=="mixed") %>% 
+# mixed precision, size 10.4in x 5.4in 
+df_full_0302 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & precision=="mixed") %>%
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
   facet_grid(granularity~profile) +
@@ -126,7 +126,6 @@ df_full_1216 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & prec
                                          linetype="solid"),
         axis.title.x=element_blank()) +  
   ylab("Top1 Accuracy(%)")
-
 
 # googlenet_slim_v4 (70.39)
 df_full_0102 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32" & precision!="mixed") %>% 
@@ -146,8 +145,8 @@ df_full_0102 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32"
                                          linetype="solid"),
         axis.title.x=element_blank()) +  
   ylab("Top1 Accuracy(%)")
-
-df_full_1216 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32" & precision=="mixed") %>% 
+# mixed precision
+df_full_0302 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32" & precision=="mixed") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
   facet_grid(granularity~profile) +
