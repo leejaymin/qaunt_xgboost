@@ -242,6 +242,8 @@ df_latency_a53 <- droplevels(df_latency_a53)
 levels(df_latency_a53[,"model"]) <-c ("googlenet_slim_v4","mobilenet","shufflenet","squeezenet","resnet18","resnet50")
 vec_level <- levels(df_latency_a53y$schema)
 df_latency_a53$schema <- factor(df_latency_a53$schema, levels=c(vec_level[2],vec_level[1],vec_level[3],vec_level[5],vec_level[4]))
+# geoMean and mean
+# df_latency_a53 %>% group_by(schema) %>% mutate(geoMean = exp(mean(log(speedup)))) %>% mutate(Mean = mean(speedup)) %>% data.frame
 
 df_latency_a53 %>%
   #ggplot(aes(x=schema, y=speedup, fill = schema))+
