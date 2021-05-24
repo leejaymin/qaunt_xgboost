@@ -261,6 +261,8 @@ df_latency_a53 %>%
                                          linetype="solid")) + 
   ylab("Normalized Performance")  
 
+
+
 # x86 i7-8700
 df_latency_i78700 <- df_latency %>% filter(model!="MobileNetv2_onnx" & 
                                              target == "i7-8700") %>% data.frame
@@ -286,6 +288,7 @@ df_latency_i78700 %>%
                                          size=0.2, 
                                          linetype="solid")) + 
   ylab("Normalized Performance")
+
 
 
 # 2080ti GPU
@@ -334,3 +337,17 @@ df_latency_2080ti %>%
                                          size=0.2, 
                                          linetype="solid")) + 
   ylab("Normalized Performance")
+
+# geo-mean and mean 
+df_latency_a53 %>% group_by(schema) %>% mutate(geoMean = exp(mean(log(speedup)))) %>% mutate(Mean = mean(speedup)) %>% data.frame
+df_latency_i78700 %>% group_by(schema) %>% mutate(geoMean = exp(mean(log(up)))) %>% mutate(Mean = mean(up)) %>% data.frame
+df_latency_2080ti %>% filter(tool == "NEST-C") %>% group_by(schema) %>% mutate(geoMean = exp(mean(log(up)))) %>% mutate(Mean = mean(up)) %>% data.frame
+
+# min-max, min-max, min-max
+df_latency_a53 %>% filter(schema != "fp32") %>% mutate(min = min(speedup), max = max(speedup)) %>% data.frame
+df_latency_i78700 %>% filter(schema != "fp32") %>% mutate(min = min(up), max = max(up)) %>% data.frame
+df_latency_2080ti %>% filter(schema != "fp32" & tool == "NEST-C") %>% mutate(min = min(up), max = max(up)) %>% data.frame
+
+
+
+
