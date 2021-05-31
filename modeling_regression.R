@@ -573,11 +573,16 @@ mydf_m = mydf %>% gather(model,accuracy,-trial)
 
 
 # 통합 그림 - 5개의 조건
+levels(graph_xgb_trials[,"model"]) <- c("MN","SHN","SQN","GN","RN18","RN50")
+levels(graph_xgb_trials[,"tuner"]) <- c("XGB-T","XGB","XGBoost: individual model","Random","Grid","FP32")
 graph_xgb_trials %>% filter(tuner != "XGBoost: individual model") %>%
 ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
-geom_step(size=1) + mytheme +
-theme(legend.title = element_blank(), 
-      legend.position="top",
+geom_step(size=0.5) + mytheme +
+theme(legend.title = element_blank(),
+      legend.position = c(0.94, 0.13),
+      legend.text = element_text(size=9),
+      legend.key.size = unit(0.5, 'cm'),
+      legend.direction = 'vertical',
       legend.background = element_rect(colour = "black", 
                                        size=0.2, 
                                        linetype="solid")) + 
