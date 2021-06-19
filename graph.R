@@ -8,6 +8,17 @@ mytheme <- theme_bw() +
   theme(axis.text.y = element_text(size=rel(1.5))) +
   theme(axis.text = element_text(colour = "black"))
 
+mytheme_wo_dashed <- theme_bw() +
+  theme(panel.border = element_rect(colour="black",size=1)) +
+  theme(panel.grid.minor = element_blank()) +
+  theme(panel.grid.major = element_blank()) +
+  #theme(panel.grid.major = element_line(colour="#9a9a9a",size=.3, linetype="dashed")) +
+  theme(axis.text.x = element_text(size=rel(1.5))) +
+  theme(axis.title.x = element_text(size=rel(1.5))) +
+  theme(axis.title.y = element_text(size=rel(1.5))) +
+  theme(axis.text.y = element_text(size=rel(1.5))) +
+  theme(axis.text = element_text(colour = "black"))
+
 load("./rank_all.Rdata")
 
 
@@ -17,20 +28,13 @@ df_full_0102 %>% filter(model=="resnet18") %>% filter(precision!="FP32" & backen
   geom_bar(stat="identity",position="dodge", colour="black")+
   facet_grid(granularity~profile) +
   coord_cartesian(ylim=c(0,75)) + # real adjust
-  scale_y_continuous(breaks= seq(0,75, by=10)) +
-  geom_text(size=3,aes(label=accuracy,  y = accuracy-0.5),color = "black",position = position_dodge(width=0.89),vjust=1,hjust=0.5 ) +
-  geom_text(x=1, y=73, aes(label="70.67%")) +
+  scale_y_continuous(breaks= seq(0,75, by=15)) +
+  #geom_text(size=3,aes(label=accuracy,  y = accuracy-0.5),color = "black",position = position_dodge(width=0.89),vjust=1,hjust=0.5 ) +
+  #geom_text(x=1, y=73, aes(label="70.67%")) +
   geom_hline(aes(yintercept=70.67), colour="#BB0000", linetype="dashed") +
-  mytheme + 
-  theme(legend.title = element_blank(), 
-        legend.position = c(0.91, 0.12),
-        legend.text = element_text(size=9),
-        legend.key.size = unit(0.5, 'cm'),
-        legend.direction="vertical",
-        legend.background = element_rect(colour = "black", 
-                                         size=0.2, 
-                                         linetype="solid"),
-        axis.title.x=element_blank()) +
+  mytheme_wo_dashed + 
+  theme(axis.title.x=element_blank(),
+        legend.position = "none") +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)") 
 
@@ -40,16 +44,15 @@ df_full_0102 %>% filter(model=="MobileNet") %>% filter(precision!="FP32") %>%
   geom_bar(stat="identity",position="dodge", colour="black")+
   facet_grid(granularity~profile) +
   coord_cartesian(ylim=c(0,75)) + # real adjust
-  scale_y_continuous(breaks= seq(0,75, by=10)) +
-  geom_text(size=3,aes(label=accuracy,  y = accuracy-0.5),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
-  geom_text(x=1, y=73, aes(label="71.81%")) +
+  scale_y_continuous(breaks= seq(0,75, by=15)) +
+  #geom_text(size=3,aes(label=accuracy,  y = accuracy-0.5),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
+  #geom_text(x=1, y=73, aes(label="71.81%")) +
   geom_hline(aes(yintercept=71.81), colour="#BB0000", linetype="dashed") +
-  mytheme + 
+  mytheme_wo_dashed + 
   theme(legend.title = element_blank(), 
-        legend.position = c(0.91, 0.12),
-        legend.text = element_text(size=9),
-        legend.key.size = unit(0.5, 'cm'),
-        legend.direction="vertical",
+        legend.position = c(0.84,0.67), 
+        legend.text = element_text(size=14.5),
+        legend.key.size = unit(0.3, 'cm'),
         legend.background = element_rect(colour = "black", 
                                          size=0.2, 
                                          linetype="solid"),
@@ -64,20 +67,13 @@ df_full_0102 %>% filter(model=="resnet50") %>% filter(precision!="FP32") %>%
   geom_bar(stat="identity",position="dodge", colour="black")+
   facet_grid(granularity~profile) +
   coord_cartesian(ylim=c(0,89)) + # real adjust
-  scale_y_continuous(breaks= seq(0,89, by=10)) +
-  geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
-  geom_text(x=1, y=78, aes(label="76.08%")) +
+  scale_y_continuous(breaks= seq(0,89, by=15)) +
+  #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
+  #geom_text(x=1, y=78, aes(label="76.08%")) +
   geom_hline(aes(yintercept=76.08), colour="#BB0000", linetype="dashed") +
-  mytheme + 
-  theme(legend.title = element_blank(), 
-        legend.position = c(0.91, 0.12),
-        legend.text = element_text(size=9),
-        legend.key.size = unit(0.5, 'cm'),
-        legend.direction="vertical",
-        legend.background = element_rect(colour = "black", 
-                                         size=0.2, 
-                                         linetype="solid"),
-        axis.title.x=element_blank()) +
+  mytheme_wo_dashed + 
+  theme(axis.title.x=element_blank(),
+        legend.position = "none") +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
 
@@ -89,19 +85,12 @@ df_full_1216 %>% filter(model=="SqueezeNet") %>% filter(precision!="FP32") %>%
   facet_grid(granularity~profile) +
   coord_cartesian(ylim=c(0,60)) + # real adjust
   scale_y_continuous(breaks= seq(0,60, by=10)) +
-  geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
-  geom_text(x=1, y=56, aes(label="53.8%")) +
+  #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
+  #geom_text(x=1, y=56, aes(label="53.8%")) +
   geom_hline(aes(yintercept=53.8), colour="#BB0000", linetype="dashed") +
-  mytheme + 
-  theme(legend.title = element_blank(), 
-        legend.position = c(0.91, 0.12),
-        legend.text = element_text(size=9),
-        legend.key.size = unit(0.5, 'cm'),
-        legend.direction="vertical",
-        legend.background = element_rect(colour = "black", 
-                                         size=0.2, 
-                                         linetype="solid"),
-        axis.title.x=element_blank()) +
+  mytheme_wo_dashed + 
+  theme(axis.title.x=element_blank(),
+        legend.position = "none") +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
 
@@ -113,19 +102,12 @@ df_full_1216 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & prec
   facet_grid(granularity~profile) +
   coord_cartesian(ylim=c(0,79)) + # real adjust
   scale_y_continuous(breaks= seq(0,70, by=10)) +
-  geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
-  geom_text(x=1, y=66, aes(label="63.96%")) +
+  #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
+  #geom_text(x=1, y=66, aes(label="63.96%")) +
   geom_hline(aes(yintercept=63.96), colour="#BB0000", linetype="dashed") +
-  mytheme + 
-  theme(legend.title = element_blank(), 
-        legend.position = c(0.91, 0.12),
-        legend.text = element_text(size=9),
-        legend.key.size = unit(0.5, 'cm'),
-        legend.direction="vertical",
-        legend.background = element_rect(colour = "black", 
-                                         size=0.2, 
-                                         linetype="solid"),
-        axis.title.x=element_blank()) + 
+  mytheme_wo_dashed + 
+  theme(axis.title.x=element_blank(),
+        legend.position = "none") +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
 # mixed precision, size 10.4in x 5.4in 
@@ -135,19 +117,12 @@ df_full_0302 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & prec
   facet_grid(granularity~profile) +
   coord_cartesian(ylim=c(0,79)) + # real adjust
   scale_y_continuous(breaks= seq(0,70, by=10)) +
-  geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
-  geom_text(x=1, y=66, aes(label="63.96%")) +
+  #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
+  #geom_text(x=1, y=66, aes(label="63.96%")) +
   geom_hline(aes(yintercept=63.96), colour="#BB0000", linetype="dashed") +
-  mytheme + 
-  theme(legend.title = element_blank(), 
-        legend.position = c(0.91, 0.12),
-        legend.text = element_text(size=9),
-        legend.key.size = unit(0.5, 'cm'),
-        legend.direction="vertical",
-        legend.background = element_rect(colour = "black", 
-                                         size=0.2, 
-                                         linetype="solid"),
-        axis.title.x=element_blank()) +  
+  mytheme_wo_dashed + 
+  theme(axis.title.x=element_blank(),
+        legend.position = "none") +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
 
@@ -158,19 +133,12 @@ df_full_0102 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32"
   facet_grid(granularity~profile) +
   coord_cartesian(ylim=c(0,80)) + # real adjust
   scale_y_continuous(breaks= seq(0,80, by=10)) +
-  geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
-  geom_text(x=1, y=75, aes(label="70.39%")) +
+  #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
+  #geom_text(x=1, y=75, aes(label="70.39%")) +
   geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
-  mytheme + 
-  theme(legend.title = element_blank(), 
-        legend.position = c(0.91, 0.25),
-        legend.text = element_text(size=9),
-        legend.key.size = unit(0.5, 'cm'),
-        legend.direction="vertical",
-        legend.background = element_rect(colour = "black", 
-                                         size=0.2, 
-                                         linetype="solid"),
-        axis.title.x=element_blank()) +  
+  mytheme_wo_dashed + 
+  theme(axis.title.x=element_blank(),
+        legend.position = "none") +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
 
@@ -181,19 +149,12 @@ df_full_0302 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32"
   facet_grid(granularity~profile) +
   coord_cartesian(ylim=c(0,80)) + # real adjust
   scale_y_continuous(breaks= seq(0,80, by=10)) +
-  geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
-  geom_text(x=1, y=75, aes(label="70.39%")) +
+  #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
+  #geom_text(x=1, y=75, aes(label="70.39%")) +
   geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
-  mytheme + 
-  theme(legend.title = element_blank(), 
-        legend.position = c(0.91, 0.25),
-        legend.text = element_text(size=9),
-        legend.key.size = unit(0.5, 'cm'),
-        legend.direction="vertical",
-        legend.background = element_rect(colour = "black", 
-                                         size=0.2, 
-                                         linetype="solid"),
-        axis.title.x=element_blank()) +  
+  mytheme_wo_dashed + 
+  theme(axis.title.x=element_blank(),
+        legend.position = "none") +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
 
@@ -223,13 +184,14 @@ g_best_trt <- data.frame(model=c("MobileNet","MobileNet","MobileNet",
 
 levels(g_best_trt[,"model"]) <- c("GN","MN","RN18","RN50","SHN","SQN")
 levels(g_best_trt[,"type"]) <- c("FP32","Quantune","TensorRT")
-
+# 5.88 x 2.17
 g_best_trt %>%  ggplot(aes(x=model, y=accuracy, fill = type)) +
   geom_bar(stat="identity",position="dodge", colour="black") +
   #facet_grid(granularity~profile) +d
-  coord_cartesian(ylim=c(52,80)) + # real adjust
-  scale_y_continuous(breaks= seq(52,80, by=10)) +
-  geom_text(size=2.3,aes(label=accuracy,  y = accuracy+2.5),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
+  coord_cartesian(ylim=c(52,85)) + # real adjust
+  scale_y_continuous(breaks= seq(52,85, by=10)) +
+  geom_text(angle=65,size=4,aes(label=accuracy,  y = accuracy+4.5),color = "black",
+            position = position_dodge(width=1), vjust=1, hjust=0.5) +
   #geom_text(x=1, y=75, aes(label="70.39%")) +
   #geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
   #ggtitle('Googlenet-v4-slim: FP32 Top1 accuracy: 70.39',
@@ -237,7 +199,7 @@ g_best_trt %>%  ggplot(aes(x=model, y=accuracy, fill = type)) +
   ylab("Top1 Accuracy(%)") +
   mytheme + 
   theme(legend.title = element_blank(), 
-        legend.position = c(0.26, 0.12),
+        legend.position = c(0.3, 0.12),
         legend.text = element_text(size=9),
         legend.key.size = unit(0.5, 'cm'),
         legend.direction="horizontal",
@@ -251,21 +213,22 @@ g_best_trt %>%  ggplot(aes(x=model, y=accuracy, fill = type)) +
 # vta result --------------------------------------------------------------
 load("./res_vta.Rdata")
 # Top1: 70.67%
-
+# 6.85 x 3.02
 res_vta %>% filter(precision!="FP32") %>% ggplot(aes(x=clipping, y=accuracy, fill = Fusion))+
   geom_bar(stat="identity",position="dodge", colour="black")+
   facet_wrap(.~profile) +
   coord_cartesian(ylim=c(20,80)) + # real adjust
   scale_y_continuous(breaks= seq(20,80, by=20)) +
   geom_text(aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
-  geom_text(x=1.3, y=72, aes(label="FP32 Acc: 70.67%")) +
-  geom_text(x=1, y=39, aes(label="VTA Acc: 37%")) +
-  geom_hline(aes(yintercept=70.67), colour="#BB0000", linetype="dashed") +
+  geom_text(x=1.3, y=73, aes(label="FP32(70.67%)")) +
+  geom_text(x=1, y=40, aes(label="TVM-VTA(37%)")) +
+  geom_hline(aes(yintercept=70.67), colour="#BB0000", linetype="solid") +
   geom_hline(aes(yintercept=37), colour="Blue", linetype="dashed") +
   #ggtitle('ResNet18: FP32 Top1 accuracy 70.67%',
   #        subtitle = "Author : Jemin") +
   ylab("Top1 Accuracy(%)") +
-  mytheme + 
+  xlab("Clipping") +
+  mytheme_wo_dashed + 
   theme( 
         legend.position = c(0.86, 0.12),
         legend.text = element_text(size=9),
@@ -290,6 +253,7 @@ df_latency_a53$schema <- factor(df_latency_a53$schema, levels=c(vec_level[2],vec
 # geoMean and mean
 # df_latency_a53 %>% group_by(schema) %>% mutate(geoMean = exp(mean(log(speedup)))) %>% mutate(Mean = mean(speedup)) %>% data.frame
 
+# 6.96 x 2.50
 df_latency_a53 %>%
   #ggplot(aes(x=schema, y=speedup, fill = schema))+
   #geom_bar(stat="identity", colour="black") +
@@ -299,8 +263,8 @@ df_latency_a53 %>%
   mytheme +
   #geom_text(aes(label=round(speedup,2),  y = speedup-.01), size =3 ,color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
   theme(legend.title = element_blank(), 
-        legend.position = c(0.48, 0.14),
-        legend.text = element_text(size=9),
+        legend.position = c(0.5, 0.14),
+        legend.text = element_text(size=11),
         legend.key.size = unit(0.5, 'cm'),
         legend.direction="horizontal",
         legend.background = element_rect(colour = "black", 
@@ -333,7 +297,7 @@ df_latency_i78700 %>%
   #geom_text(aes(label=round(up,2),  y = up-.01),size=3, color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
   theme(legend.title = element_blank(), 
         legend.position = c(0.86, 0.7),
-        legend.text = element_text(size=9),
+        legend.text = element_text(size=11),
         legend.key.size = unit(0.5, 'cm'),
         legend.direction="vertical",
         legend.background = element_rect(colour = "black", 
@@ -368,8 +332,8 @@ df_latency_2080ti %>% filter(schema != "unknown") %>%
   mytheme +
   #geom_text(aes(label=round(up,2),  y = up-.01),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
   theme(legend.title = element_blank(), 
-        legend.position = c(0.48, 0.14),
-        legend.text = element_text(size=9),
+        legend.position = c(0.5, 0.14),
+        legend.text = element_text(size=11),
         legend.key.size = unit(0.5, 'cm'),
         legend.direction="horizontal",
         legend.background = element_rect(colour = "black", 
@@ -407,5 +371,62 @@ df_latency_i78700 %>% filter(schema != "fp32") %>% mutate(min = min(up), max = m
 df_latency_2080ti %>% filter(schema != "fp32" & tool == "NEST-C") %>% mutate(min = min(up), max = max(up)) %>% data.frame
 
 
+# speed-up (performance gain)
 
+trial_gain <- data.frame(model=c("MobileNet","MobileNet","MobileNet","MobileNet",
+                                 "ShuffleNet","ShuffleNet","ShuffleNet","ShuffleNet",
+                                 "SqueezeNet","SqueezeNet","SqueezeNet","SqueezeNet",
+                                 "GoogleNet-slim-v4","GoogleNet-slim-v4","GoogleNet-slim-v4","GoogleNet-slim-v4",
+                                 "ResNet18","ResNet18","ResNet18","ResNet18",
+                                 "ResNet50","ResNet50","ResNet50","ResNet50",
+                                 "GeoMean","GeoMean","GeoMean","GeoMean"),
+                         type=c("Random","Grid","XGB","XGB-T",
+                                "Random","Grid","XGB","XGB-T",
+                                "Random","Grid","XGB","XGB-T",
+                                "Random","Grid","XGB","XGB-T",
+                                "Random","Grid","XGB","XGB-T",
+                                "Random","Grid","XGB","XGB-T",
+                                "Random","Grid","XGB","XGB-T"),
+                         steps=c(11,29,22,2,
+                                    47,63,28,36,
+                                    29,29,30,4,
+                                    62,21,51,2,
+                                    30,21,24,14,
+                                    30,45,48,28,
+                                    -1,-1,-1,-1),
+                         speedup=c(1.00,0.38,0.50,5.50,
+                                   1.00,0.75,1.68,1.31,
+                                   1.00,1.00,0.97,7.25,
+                                   1.00,2.95,1.22,31.00,
+                                   1.00,1.43,1.25,2.14,
+                                   1.00,0.67,0.62,1.07,
+                                   1.00,0.96,0.96,3.93))
+# Compute Geo mean 
+trial_gain %>% group_by(type) %>% mutate(geoMean = exp(mean(log(speedup)))) %>% data.frame
 
+levels(trial_gain[,"model"]) <- c("GeoMean","GN","MN","RN18","RN50","SHN","SQN")
+
+# 6.47 x 2.47
+trial_gain %>%  ggplot(aes(x=model, y=speedup, fill = type)) +
+  geom_bar(stat="identity",position="dodge", colour="black") +
+  #facet_grid(granularity~profile) +d
+  coord_cartesian(ylim=c(0,35)) + # real adjust
+  #scale_y_continuous(breaks= seq(52,85, by=10)) +
+  geom_text(angle=90,size=4,aes(label=speedup,  y = speedup+1.5),color = "black",
+            position = position_dodge(width=.9), vjust=0.3, hjust=.2) +
+  #geom_text(x=1, y=75, aes(label="70.39%")) +
+  #geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
+  #ggtitle('Googlenet-v4-slim: FP32 Top1 accuracy: 70.39',
+  #subtitle = "Author : Jemin") +
+  ylab("Relative Speedup") +
+  mytheme + 
+  theme(legend.title = element_blank(), 
+        legend.position = c(0.7, 0.85),
+        legend.text = element_text(size=9),
+        legend.key.size = unit(0.5, 'cm'),
+        legend.direction="horizontal",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid"),
+        axis.title.x=element_blank()) +  
+  scale_fill_brewer(palette = "Blues") 

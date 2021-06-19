@@ -3,7 +3,6 @@
 load("./df_mfull.Rdata")
 
 
-
 # preprocessing effect according to factor and one-hot encoding -----------
 #training model
 xgboost_model = xgb.cv(data = a, label = b,
@@ -531,6 +530,24 @@ for(item in model_names){
 }
 save(random_top1_accuracy,file="random_top1_accuracy.Rdata")
 
+# Random Search on ResNet50
+random_top1_accuracy_resnet50 <-c()
+# not use one-hot encoding data frame.
+reg_test_loso <- df_mfull %>% filter(model=="resnet50") #%>%select(-c("accuracy","rnk","model")) %>% data.matrix
+set.seed(3)
+top1_accuracy <- sample(reg_test_loso[,"accuracy"])
+print("original accuracy sample")
+print(top1_accuracy)
+for (i in seq(2,length(top1_accuracy),1)){
+  print(i)
+  top1_accuracy[i] <- max(top1_accuracy[1:i])
+}
+print("final accuracy of random search:")
+print(table(top1_accuracy))
+random_top1_accuracy_resnet50 <- top1_accuracy
+random_top1_accuracy[[6]] <- random_top1_accuracy_resnet50
+save(random_top1_accuracy,file="random_top1_accuracy.Rdata")
+
 
 # for graph, extract data from transfer and online learning.
 graph_xgb_trials <- data.frame()
@@ -572,14 +589,27 @@ library(tidyr)
 mydf_m = mydf %>% gather(model,accuracy,-trial)
 
 
-# 통합 그림 - 5개의 조건
+mytheme_wo_dashed <- theme_bw() +
+  theme(panel.border = element_rect(colour="black",size=1)) +
+  theme(panel.grid.minor = element_blank()) +
+  theme(panel.grid.major = element_blank()) +
+  #theme(panel.grid.major = element_line(colour="#9a9a9a",size=.3, linetype="dashed")) +
+  theme(axis.text.x = element_text(size=rel(1.5))) +
+  theme(axis.title.x = element_text(size=rel(1.5))) +
+  theme(axis.title.y = element_text(size=rel(1.5))) +
+  theme(axis.text.y = element_text(size=rel(1.5))) +
+  theme(axis.text = element_text(colour = "black"))
+
+
+# 통합 그림 - 5개의 조건 -> 4개 조건
 levels(graph_xgb_trials[,"model"]) <- c("MN","SHN","SQN","GN","RN18","RN50")
-levels(graph_xgb_trials[,"tuner"]) <- c("XGB-T","XGB","XGBoost: individual model","Random","Grid","FP32")
-graph_xgb_trials %>% filter(tuner != "XGBoost: individual model") %>%
-ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
-geom_step(size=0.5) + mytheme +
+levels(graph_xgb_trials[,"tuner"]) <- c("XGB-T","XGB","XGB-simple","Random","Grid","FP32")
+graph_xgb_trials %>% filter(tuner != "XGB-simple" & tuner != "FP32") %>%
+ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner, linetype = tuner)) +
+geom_step(size=0.7) +
+mytheme_wo_dashed +
 theme(legend.title = element_blank(),
-      legend.position = c(0.94, 0.13),
+      legend.position = c(0.94, 0.1),
       legend.text = element_text(size=9),
       legend.key.size = unit(0.5, 'cm'),
       legend.direction = 'vertical',
