@@ -22,11 +22,21 @@ mytheme_wo_dashed <- theme_bw() +
 load("./rank_all.Rdata")
 
 
-# Resnet18 (70.67%) 10.28x6.17
+# Resnet18 (70.67%) 7.25 x 4.28
+# New facet label names for granularity.name
+granularity.name <- c("Channel","Tensor")
+names(granularity.name) <- c("channel","tensor")
+
+# New facet label names for profile.name
+profile.name <- c("# of Images: 1", "# of Images: 1,000", "# of Images: 10,000")
+names(profile.name) <- c("1", "1000", "10000")
+
+
 df_full_0102 %>% filter(model=="resnet18") %>% filter(precision!="FP32" & backend!="VTAInterpreter") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
-  facet_grid(granularity~profile) +
+  facet_grid(granularity~profile,
+             labeller = labeller(granularity = granularity.name, profile = profile.name)) +
   coord_cartesian(ylim=c(0,75)) + # real adjust
   scale_y_continuous(breaks= seq(0,75, by=15)) +
   #geom_text(size=3,aes(label=accuracy,  y = accuracy-0.5),color = "black",position = position_dodge(width=0.89),vjust=1,hjust=0.5 ) +
@@ -34,7 +44,8 @@ df_full_0102 %>% filter(model=="resnet18") %>% filter(precision!="FP32" & backen
   geom_hline(aes(yintercept=70.67), colour="#BB0000", linetype="dashed") +
   mytheme_wo_dashed + 
   theme(axis.title.x=element_blank(),
-        legend.position = "none") +
+        legend.position = "none",
+        strip.text.x = element_text(size = rel(1.5)),strip.text.y = element_text(size = rel(1.5))) +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)") 
 
@@ -42,14 +53,16 @@ df_full_0102 %>% filter(model=="resnet18") %>% filter(precision!="FP32" & backen
 df_full_0102 %>% filter(model=="MobileNet") %>% filter(precision!="FP32") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
-  facet_grid(granularity~profile) +
+  facet_grid(granularity~profile,
+             labeller = labeller(granularity = granularity.name, profile = profile.name)) +
   coord_cartesian(ylim=c(0,75)) + # real adjust
   scale_y_continuous(breaks= seq(0,75, by=15)) +
   #geom_text(size=3,aes(label=accuracy,  y = accuracy-0.5),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
   #geom_text(x=1, y=73, aes(label="71.81%")) +
   geom_hline(aes(yintercept=71.81), colour="#BB0000", linetype="dashed") +
   mytheme_wo_dashed + 
-  theme(legend.title = element_blank(), 
+  theme(legend.title = element_blank(),
+        strip.text.x = element_text(size = rel(1.5)),strip.text.y = element_text(size = rel(1.5)),
         legend.position = c(0.84,0.67), 
         legend.text = element_text(size=14.5),
         legend.key.size = unit(0.3, 'cm'),
@@ -65,7 +78,8 @@ df_full_0102 %>% filter(model=="MobileNet") %>% filter(precision!="FP32") %>%
 df_full_0102 %>% filter(model=="resnet50") %>% filter(precision!="FP32") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
-  facet_grid(granularity~profile) +
+  facet_grid(granularity~profile,
+             labeller = labeller(granularity = granularity.name, profile = profile.name)) +
   coord_cartesian(ylim=c(0,89)) + # real adjust
   scale_y_continuous(breaks= seq(0,89, by=15)) +
   #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
@@ -73,7 +87,8 @@ df_full_0102 %>% filter(model=="resnet50") %>% filter(precision!="FP32") %>%
   geom_hline(aes(yintercept=76.08), colour="#BB0000", linetype="dashed") +
   mytheme_wo_dashed + 
   theme(axis.title.x=element_blank(),
-        legend.position = "none") +
+        legend.position = "none",
+        strip.text.x = element_text(size = rel(1.5)),strip.text.y = element_text(size = rel(1.5))) +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
 
@@ -82,7 +97,8 @@ df_full_0102 %>% filter(model=="resnet50") %>% filter(precision!="FP32") %>%
 df_full_1216 %>% filter(model=="SqueezeNet") %>% filter(precision!="FP32") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
-  facet_grid(granularity~profile) +
+  facet_grid(granularity~profile,
+             labeller = labeller(granularity = granularity.name, profile = profile.name)) +
   coord_cartesian(ylim=c(0,60)) + # real adjust
   scale_y_continuous(breaks= seq(0,60, by=10)) +
   #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
@@ -90,7 +106,8 @@ df_full_1216 %>% filter(model=="SqueezeNet") %>% filter(precision!="FP32") %>%
   geom_hline(aes(yintercept=53.8), colour="#BB0000", linetype="dashed") +
   mytheme_wo_dashed + 
   theme(axis.title.x=element_blank(),
-        legend.position = "none") +
+        legend.position = "none",
+        strip.text.x = element_text(size = rel(1.5)),strip.text.y = element_text(size = rel(1.5))) +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
 
@@ -99,7 +116,8 @@ df_full_1216 %>% filter(model=="SqueezeNet") %>% filter(precision!="FP32") %>%
 df_full_1216 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & precision!="mixed") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
-  facet_grid(granularity~profile) +
+  facet_grid(granularity~profile,
+             labeller = labeller(granularity = granularity.name, profile = profile.name)) +
   coord_cartesian(ylim=c(0,79)) + # real adjust
   scale_y_continuous(breaks= seq(0,70, by=10)) +
   #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
@@ -107,14 +125,16 @@ df_full_1216 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & prec
   geom_hline(aes(yintercept=63.96), colour="#BB0000", linetype="dashed") +
   mytheme_wo_dashed + 
   theme(axis.title.x=element_blank(),
-        legend.position = "none") +
+        legend.position = "none",
+        strip.text.x = element_text(size = rel(1.5)),strip.text.y = element_text(size = rel(1.5))) +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
 # mixed precision, size 10.4in x 5.4in 
 df_full_0302 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & precision=="mixed") %>%
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
-  facet_grid(granularity~profile) +
+  facet_grid(granularity~profile,
+             labeller = labeller(granularity = granularity.name, profile = profile.name)) +
   coord_cartesian(ylim=c(0,79)) + # real adjust
   scale_y_continuous(breaks= seq(0,70, by=10)) +
   #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
@@ -122,7 +142,8 @@ df_full_0302 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & prec
   geom_hline(aes(yintercept=63.96), colour="#BB0000", linetype="dashed") +
   mytheme_wo_dashed + 
   theme(axis.title.x=element_blank(),
-        legend.position = "none") +
+        legend.position = "none",
+        strip.text.x = element_text(size = rel(1.5)),strip.text.y = element_text(size = rel(1.5))) +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
 
@@ -130,7 +151,8 @@ df_full_0302 %>% filter(model=="ShuffleNet") %>% filter(precision!="FP32" & prec
 df_full_0102 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32" & precision!="mixed") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
-  facet_grid(granularity~profile) +
+  facet_grid(granularity~profile,
+             labeller = labeller(granularity = granularity.name, profile = profile.name)) +
   coord_cartesian(ylim=c(0,80)) + # real adjust
   scale_y_continuous(breaks= seq(0,80, by=10)) +
   #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
@@ -138,15 +160,16 @@ df_full_0102 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32"
   geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
   mytheme_wo_dashed + 
   theme(axis.title.x=element_blank(),
-        legend.position = "none") +
+        legend.position = "none",
+        strip.text.x = element_text(size = rel(1.5)),strip.text.y = element_text(size = rel(1.5))) +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
-
 # mixed precision
 df_full_0302 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32" & precision=="mixed") %>% 
   ggplot(aes(x=clipping, y=accuracy, fill = schema))+
   geom_bar(stat="identity",position="dodge", colour="black")+
-  facet_grid(granularity~profile) +
+  facet_grid(granularity~profile,
+             labeller = labeller(granularity = granularity.name, profile = profile.name)) +
   coord_cartesian(ylim=c(0,80)) + # real adjust
   scale_y_continuous(breaks= seq(0,80, by=10)) +
   #geom_text(size=3,aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89), vjust=1.6, hjust=0.5) +
@@ -154,7 +177,8 @@ df_full_0302 %>% filter(model=="googlenet_slim_v4") %>% filter(precision!="FP32"
   geom_hline(aes(yintercept=70.39), colour="#BB0000", linetype="dashed") +
   mytheme_wo_dashed + 
   theme(axis.title.x=element_blank(),
-        legend.position = "none") +
+        legend.position = "none",
+        strip.text.x = element_text(size = rel(1.5)),strip.text.y = element_text(size = rel(1.5))) +
   scale_fill_brewer(palette = "Blues") +
   ylab("Top1 Accuracy(%)")
 
@@ -216,7 +240,8 @@ load("./res_vta.Rdata")
 # 6.85 x 3.02
 res_vta %>% filter(precision!="FP32") %>% ggplot(aes(x=clipping, y=accuracy, fill = Fusion))+
   geom_bar(stat="identity",position="dodge", colour="black")+
-  facet_wrap(.~profile) +
+  facet_wrap(.~profile,
+             labeller = labeller(profile = profile.name)) +
   coord_cartesian(ylim=c(20,80)) + # real adjust
   scale_y_continuous(breaks= seq(20,80, by=20)) +
   geom_text(aes(label=accuracy,  y = accuracy-1),color = "black",position = position_dodge(width=0.89),vjust=1.6,hjust=0.5 ) +
@@ -229,7 +254,7 @@ res_vta %>% filter(precision!="FP32") %>% ggplot(aes(x=clipping, y=accuracy, fil
   ylab("Top1 Accuracy(%)") +
   xlab("Clipping") +
   mytheme_wo_dashed + 
-  theme( 
+  theme(strip.text.x = element_text(size = 12), 
         legend.position = c(0.86, 0.12),
         legend.text = element_text(size=9),
         legend.key.size = unit(0.5, 'cm'),
