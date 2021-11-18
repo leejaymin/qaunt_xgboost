@@ -6,6 +6,7 @@
 #col_name[17] = "linear_typeasymmetric"
 #a_rank <- a_rank[,col_name]
 
+
 # group: # of models
 groups <- rank_all_group %>% group_by(model) %>% dplyr::summarise(cnt = n()) %>% pull(cnt)
 # signle

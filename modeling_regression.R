@@ -161,12 +161,12 @@ for (sample in (1:1)){
     
     df_res_pred <- df_res_pred %>% arrange(desc(pred)) # along with prediction, rearrange pred to make training data.
   
-    #print(sprintf("Top1 pred: %d, Real: %d",top1_pred,top1_real))
-    #print(df_res_pred[1:sample,c("rnk")])
-    #print(df_res_pred[1:sample,c("accuracy")])
-    #print(df_res_pred[1:sample,c("pred")])
-    #pred_accuracy_sum <- sum(df_res_pred[1:sample,c("pred")])
-    #print(sprintf("sum of accuracy: %f",pred_accuracy_sum))
+    print(sprintf("Top1 pred: %d, Real: %d",top1_pred,top1_real))
+    print(df_res_pred[1:sample,c("rnk")])
+    print(df_res_pred[1:sample,c("accuracy")])
+    print(df_res_pred[1:sample,c("pred")])
+    pred_accuracy_sum <- sum(df_res_pred[1:sample,c("pred")])
+    print(sprintf("sum of accuracy: %f",pred_accuracy_sum))
     top1_seq <- c(top1_pred)
     # redundant check (validation check for training)
     #browser()
@@ -268,6 +268,8 @@ for (sample in (1:1)){
 }
 save(online_top1_accuracy,file="./online_top1_accuracy.Rdata")
 save(online_top1_accuracy_simple,file="./online_top1_accuracy_simple.Rdata")
+
+
 
 # Feasibility Test (upper-bound, if only the data from same model is used)
 for(item in model_names){
@@ -576,6 +578,40 @@ for(index in seq(1,6,1)){
 graph_xgb_trials <- graph_xgb_trials %>% group_by(model,tuner) %>% mutate(trials=row_number()) %>% data.frame()
 
 
+
+graph_xgb_trials_w_genetic<- data.frame()
+for(index in seq(1,6,1)){
+  item <- model_names[index]
+  graph_xgb_trials_w_genetic <- rbind.data.frame(graph_xgb_trials_w_genetic,
+                                       cbind.data.frame("model"=item,"tuner"="XGBoost: transfer & online",
+                                                        "accuracy"=transfer_online_top1_accuracy[[index]]))
+  graph_xgb_trials_w_genetic <- rbind.data.frame(graph_xgb_trials_w_genetic,
+                                       cbind.data.frame("model"=item,"tuner"="XGBoost: online",
+                                                        "accuracy"=online_top1_accuracy[[index]]))
+  graph_xgb_trials_w_genetic <- rbind.data.frame(graph_xgb_trials_w_genetic,
+                                       cbind.data.frame("model"=item,"tuner"="XGBoost: individual model",
+                                                        "accuracy"=online_top1_accuracy_simple[[index]]))
+  graph_xgb_trials_w_genetic <- rbind.data.frame(graph_xgb_trials_w_genetic,
+                                       cbind.data.frame("model"=item,"tuner"="Random Search",
+                                                        "accuracy"=random_top1_accuracy[[index]]))
+  graph_xgb_trials_w_genetic <- rbind.data.frame(graph_xgb_trials_w_genetic,
+                                       cbind.data.frame("model"=item,"tuner"="Grid Search",
+                                                        "accuracy"=grid_top1_accuracy[[index]]))
+  graph_xgb_trials_w_genetic <- rbind.data.frame(graph_xgb_trials_w_genetic,
+                                                 cbind.data.frame("model"=item,"tuner"="Genetic",
+                                                                  "accuracy"=genetic_top1_accuracy[[index]]))
+  graph_xgb_trials_w_genetic <- rbind.data.frame(graph_xgb_trials_w_genetic,
+                                       cbind.data.frame("model"=item,"tuner"="FP32",
+                                                        "accuracy"=rep(FP32[index,"accuracy"],
+                                                                       length(transfer_online_top1_accuracy[[index]]))))
+}
+graph_xgb_trials_w_genetic <- graph_xgb_trials_w_genetic %>% 
+  group_by(model,tuner) %>% 
+  mutate(trials=row_number()) %>% 
+  data.frame()
+
+
+
 # Finally Draw Plotting (# of trails and Accuracy)
 #일단 그래프 부터 그리고 필요한 데이터 구조를 생각 해야할듯 
 mydf = data.frame(
@@ -587,7 +623,6 @@ library(reshape2)
 mydf_m = melt(mydf,.id=trail)
 library(tidyr)
 mydf_m = mydf %>% gather(model,accuracy,-trial)
-
 
 mytheme_wo_dashed <- theme_bw() +
   theme(panel.border = element_rect(colour="black",size=1)) +
@@ -601,9 +636,12 @@ mytheme_wo_dashed <- theme_bw() +
   theme(axis.text = element_text(colour = "black"))
 
 
-# 통합 그림 - 5개의 조건 -> 4개 조건
+# 통합 그림 - 4개 조건
 levels(graph_xgb_trials[,"model"]) <- c("MN","SHN","SQN","GN","RN18","RN50")
 levels(graph_xgb_trials[,"tuner"]) <- c("XGB-T","XGB","XGB-simple","Random","Grid","FP32")
+
+save(graph_xgb_trials,file="graph_xgb_trials.Rdata")
+
 graph_xgb_trials %>% filter(tuner != "XGB-simple" & tuner != "FP32") %>%
 ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner, linetype = tuner)) +
 geom_step(size=0.7) +
@@ -619,12 +657,34 @@ theme(legend.title = element_blank(),
 ylab("Top1 Accuracy(%)") + xlab("# of Trials") +
 facet_wrap(.~model, scales = "free") 
 
-# 통합 그림 - 6개의 조건
+# 통합 그림 - 6개의 조건 (not used)
 graph_xgb_trials %>%
   ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner)) +
   geom_step(size=1) + mytheme +
   theme(legend.title = element_blank(), 
         legend.position="top",
+        legend.background = element_rect(colour = "black", 
+                                         size=0.2, 
+                                         linetype="solid")) + 
+  ylab("Top1 Accuracy(%)") + xlab("# of Trials") +
+  facet_wrap(.~model, scales = "free") 
+
+# 통합 그림 - 5개 (including genetic algorithm (revision FGCS))
+levels(graph_xgb_trials_w_genetic[,"model"]) <- c("MN","SHN","SQN","GN","RN18","RN50")
+levels(graph_xgb_trials_w_genetic[,"tuner"]) <- c("XGB-T","XGB","XGB-simple","Random","Grid","Genetic","FP32")
+
+save(graph_xgb_trials_w_genetic,file="graph_xgb_trials_w_genetic.Rdata")
+
+graph_xgb_trials_w_genetic %>% filter(tuner != "XGB-simple" & tuner != "FP32") %>%
+#graph_xgb_trials_w_genetic %>% filter(tuner == "XGB-T" | tuner == "Genetic") %>%
+  ggplot(aes(x=trials, y=accuracy, group=tuner, colour=tuner, linetype = tuner)) +
+  geom_step(size=0.7) +
+  mytheme_wo_dashed +
+  theme(legend.title = element_blank(),
+        legend.position = c(0.94, 0.1),
+        legend.text = element_text(size=9),
+        legend.key.size = unit(0.5, 'cm'),
+        legend.direction = 'vertical',
         legend.background = element_rect(colour = "black", 
                                          size=0.2, 
                                          linetype="solid")) + 

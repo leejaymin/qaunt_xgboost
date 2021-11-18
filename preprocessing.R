@@ -36,8 +36,9 @@ cvplot = function(model){ #visualizing function
 #df_full_1107 <- read.xlsx("quant_1107.xlsx",sheetName="full")
 #df_full_1201 <- read.xlsx("quant_1201.xlsx",sheetName="full")
 #df_full_1216 <- read.xlsx("quant_1216.xlsx",sheetName="full")
-df_full_0102 <- read.xlsx("quant_0102.xlsx",sheetName="full")
+df_full_0102 <- read.xlsx("./inputs/quant_0102.xlsx",sheetName="full")
 df_full_0302 <- read.xlsx("./inputs/quant_0302.xlsx",sheetName="full") # mixed precision results
+df_full_1117 <- read.xlsx("./inputs/quant_1117.xlsx",sheetName="full") # mixed precision results & specify backend
 
 
 
@@ -46,7 +47,7 @@ res_vta <- df_full_0102 %>% filter(model=="resnet18" & backend=="VTAInterpreter"
 save(res_vta,file="./res_vta.Rdata")
 
 
-df_mf <- read.xlsx("quant_0102.xlsx",sheetName="m_f")
+df_mf <- read.xlsx("./inputs/quant_0102.xlsx",sheetName="m_f")
 df_mfull <- merge(df_full_0102, df_mf, by="model")
 
 
